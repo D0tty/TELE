@@ -16,7 +16,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        include/csv.hpp)
+        include/csv.hpp src/misc/misc.cc src/misc/misc.hh)
 
 add_compile_options(
         -Wall

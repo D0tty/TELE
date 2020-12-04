@@ -1,24 +1,19 @@
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include "csv.hpp"
+#include "misc/misc.hh"
 
-int main()
+int main(int argc, char *argv[])
 {
-    int flags=IMG_INIT_JPG|IMG_INIT_PNG;
-    int initted = IMG_Init(flags);
-    if((initted & flags) != flags) {
-        printf("IMG_Init: Failed to init required jpg and png support!\n");
-        printf("IMG_Init: %s\n", IMG_GetError());
-        // handle error
+    if (argc == 2 && strEqual(argv[1], "-h")) {
+        usage(argv);
+        return 0;
     }
-    // load sample.png into image
-    SDL_Surface *image;
-    image = IMG_Load("sample.png");
-    if(!image) {
-        printf("IMG_Load: %s\n", IMG_GetError());
-        // handle error
+    if (argc != 3) {
+        usage(argv);
+        exit(2);
     }
-    std::cout<<"Hello, World!"<<std::endl;
+    if (!strEqual(argv[1], "-d")) {
+        usage(argv);
+    }
+
+    std::string directoryPath(argv[2]);
     return 0;
 }
