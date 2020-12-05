@@ -14,6 +14,17 @@ int main(int argc, char *argv[])
         usage(argv);
     }
 
-    std::string directoryPath(argv[2]);
+    std::string strDirectoryPath(argv[2]);
+    if (!isPath(strDirectoryPath)) {
+        std::cout << "This is not a directory: " << strDirectoryPath << std::endl;
+        exit(2);
+    }
+
+    boost::filesystem::path directoryPath(strDirectoryPath);
+    auto files = getDirectoryFiles(directoryPath);
+
+    for (auto &f : files)
+        std::cout << f << std::endl;
+
     return 0;
 }
