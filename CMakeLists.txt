@@ -17,7 +17,13 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        include/csv.hpp src/misc/misc.cc src/misc/misc.hh)
+
+        include/csv.hpp
+
+        src/misc/misc.cc
+        src/misc/misc.hh
+        src/misc/singleton.cc
+        src/misc/singleton.hh)
 
 add_compile_options(
         -Wall
