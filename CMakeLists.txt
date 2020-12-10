@@ -16,14 +16,24 @@ include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 add_executable(${PROJECT_NAME}
-        src/main.cpp
+        src/main.cc
 
         include/csv.hpp
 
         src/misc/misc.cc
         src/misc/misc.hh
         src/misc/singleton.cc
-        src/misc/singleton.hh)
+        src/misc/singleton.hh
+
+        src/data/Image.cc
+        src/data/Image.hh
+        src/data/Coordinate.cc
+        src/data/Coordinate.hh
+
+        src/metadata/GeoTaggedImage.cc
+        src/metadata/GeoTaggedImage.hh
+        src/metadata/GeoTaggedImageList.cc
+        src/metadata/GeoTaggedImageList.hh)
 
 add_compile_options(
         -Wall
@@ -33,6 +43,7 @@ add_compile_options(
         -g3)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+        src
         include
         ${Boost_INCLUDE_DIRS})
 

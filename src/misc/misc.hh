@@ -11,8 +11,17 @@
 #include <boost/filesystem.hpp>
 #include <boost/range.hpp>
 
+/**
+ * takes path of dir, returns a lexicographically sorted vector of paths
+ * @param path self explanatory
+ * @return sorted vector of path to images
+ */
 std::vector<boost::filesystem::path> getDirectoryFiles(boost::filesystem::path &path);
+
 int isPath(std::string &strPath);
+
+int strEqual(char *s1, const std::string &s2);
+
 void usage(char *argv[]);
-int strEqual(char *s1, std::string s2);
+
 #endif //TELE_MISC_HH

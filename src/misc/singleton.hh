@@ -5,21 +5,25 @@
 #ifndef TELE_SINGLETON_HH
 #define TELE_SINGLETON_HH
 
-template <typename T>
+#include <mutex> /* singleton in GUI -> mutex */
+
+template<typename T>
 class Singleton {
 public:
-    static T& instance();
+    static T &instance();
 
-    Singleton(const Singleton&) = delete;
-    Singleton& operator= (const Singleton) = delete;
+    Singleton(const Singleton &) = delete;
+
+    Singleton &operator=(const Singleton) = delete;
 
 protected:
     Singleton() {}
 };
 
 template<typename T>
-T& Singleton<T>::instance() {
+T &Singleton<T>::instance() {
     static T instance{};
     return instance;
 }
+
 #endif //TELE_SINGLETON_HH

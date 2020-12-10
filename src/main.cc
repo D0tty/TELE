@@ -1,7 +1,7 @@
 #include "misc/misc.hh"
+#include "metadata/GeoTaggedImageList.hh"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     if (argc == 2 && strEqual(argv[1], "-h")) {
         usage(argv);
         return 0;
@@ -21,10 +21,8 @@ int main(int argc, char *argv[])
     }
 
     boost::filesystem::path directoryPath(strDirectoryPath);
-    auto files = getDirectoryFiles(directoryPath);
-
-    for (auto &f : files)
-        std::cout << f << std::endl;
+    auto &geoTaggedImageList = GeoTaggedImageList::instance();
+    geoTaggedImageList.PopulateImages(directoryPath);
 
     return 0;
 }

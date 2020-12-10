@@ -32,8 +32,8 @@ int isPath(std::string &strPath) {
     return false;
 }
 
-int strEqual(char *s1, std::string s2) {
-    return s2.compare(s1) == 0;
+int strEqual(char *s1, const std::string &s2) {
+    return s2 == s1;
 }
 
 void usage(char **argv) {
