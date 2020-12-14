@@ -1,28 +1,24 @@
 #include "misc/misc.hh"
 #include "metadata/GeoTaggedImageList.hh"
+#include <QApplication>
+#include <gui/imageviewer.hh>
+#include <QtWidgets/QFileDialog>
+#include <QDebug>
 
 int main(int argc, char *argv[]) {
-    if (argc == 2 && strEqual(argv[1], "-h")) {
-        usage(argv);
-        return 0;
-    }
-    if (argc != 3) {
-        usage(argv);
-        exit(2);
-    }
-    if (!strEqual(argv[1], "-d")) {
-        usage(argv);
-    }
+    QApplication app(argc, argv);
 
-    std::string strDirectoryPath(argv[2]);
-    if (!isPath(strDirectoryPath)) {
-        std::cout << "This is not a directory: " << strDirectoryPath << std::endl;
-        exit(2);
-    }
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    dialog.exec();
 
-    boost::filesystem::path directoryPath(strDirectoryPath);
+//    boost::filesystem::path directoryPath();
     auto &geoTaggedImageList = GeoTaggedImageList::instance();
-    geoTaggedImageList.PopulateImages(directoryPath);
+    geoTaggedImageList.PopulateImages(dialog.directory().absolutePath().toStdString());
 
+    ImageViewer imageViewer;
+    imageViewer.show();
+    QApplication::exec();
     return 0;
 }

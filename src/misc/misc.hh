@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
-#include <boost/range.hpp>
+#include <boost/range/iterator.hpp>
 
 /**
  * takes path of dir, returns a lexicographically sorted vector of paths

@@ -1,0 +1,99 @@
+//
+// Created by dotty on 12/14/20.
+//
+
+#ifndef TELE_IMAGEVIEWER_HH
+#define TELE_IMAGEVIEWER_HH
+
+#include <QMainWindow>
+#include <QImage>
+#include <QLabel>
+#include <metadata/GeoTaggedImageList.hh>
+
+//region Class forward declarations
+QT_BEGIN_NAMESPACE
+class QAction;
+
+class QLabel;
+
+class QMenu;
+
+class QScrollArea;
+
+class QScrollBar;
+
+class SubQLabel;
+
+QT_END_NAMESPACE
+//endregion
+
+//region ImageViewer class
+class ImageViewer : public QMainWindow {
+Q_OBJECT
+
+public:
+    explicit ImageViewer(QWidget *parent = nullptr);
+
+    bool loadFile(const QString &);
+
+private slots:
+
+    void open();
+
+    void zoomIn();
+
+    void zoomOut();
+
+    void normalSize();
+
+    void fitToWindow();
+
+    void about();
+
+signals:
+
+    void scaleFactorChanged(const double &);
+
+private:
+    void createActions();
+
+    void updateActions();
+
+    void setImage(const QImage &newImage);
+
+    void scaleImage(double factor);
+
+    static void adjustScrollBar(QScrollBar *scrollBar, double factor);
+
+    //TODO add GeoTaggedImageList here
+    GeoTaggedImageList geoTaggedImageList;
+    //TODO add current image on list index ?
+    QImage image;
+    SubQLabel *imageLabel;
+    double scaleFactor = 1;
+    QScrollArea *scrollArea;
+    QAction *zoomInAct{};
+    QAction *zoomOutAct{};
+    QAction *normalSizeAct{};
+    QAction *fitToWindowAct{};
+};
+//endregion
+
+//region SubQLabel class
+class SubQLabel : public QLabel {
+Q_OBJECT
+
+public:
+    void mousePressEvent(QMouseEvent *event);
+
+public slots:
+
+    void setFactor(const double &factor);
+
+private:
+    double scaleFactor = 1.0;
+
+};
+//endregion
+
+#endif //TELE_IMAGEVIEWER_HH
