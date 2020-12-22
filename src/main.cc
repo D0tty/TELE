@@ -11,9 +11,11 @@ int main(int argc, char *argv[]) {
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
-    dialog.exec();
+    if (dialog.exec() == 0) {
+        std::cout << "No directory was selected." << std::endl;
+        return 2;
+    }
 
-//    boost::filesystem::path directoryPath();
     auto &geoTaggedImageList = GeoTaggedImageList::instance();
     geoTaggedImageList.PopulateImages(dialog.directory().absolutePath().toStdString());
 

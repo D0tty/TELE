@@ -63,7 +63,7 @@ ImageViewer::ImageViewer(QWidget *parent)
 
     auto s = QGuiApplication::primaryScreen()->availableVirtualSize() * 2 / 5; //magic number to fix x11 display bug
     resize(s);
-    loadFile(QString::fromStdString(GeoTaggedImageList::instance().geoTaggedImageList_[0].image_.path_.string()));
+    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_.base()->path_.string()));
 }
 
 bool ImageViewer::loadFile(const QString &fileName) {
@@ -81,24 +81,26 @@ bool ImageViewer::loadFile(const QString &fileName) {
 
     setWindowFilePath(fileName);
 
-    const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
-            .arg(QDir::toNativeSeparators(fileName))
-            .arg(image.width())
-            .arg(image.height())
-            .arg(image.depth());
+    const QString message = tr("Opened \"%1\", %2/%3")
+            .arg(QDir::toNativeSeparators(
+                    QString::fromStdString(boost::filesystem::path(fileName.toStdString()).stem().string())))
+            .arg(GeoTaggedImageList::instance().GetListPosition())
+            .arg(GeoTaggedImageList::instance().GetListLength());
     statusBar()->showMessage(message);
     return true;
 }
 
+//FIXME no need to load an image but a directory and populate images
+//FIXME memory carefull, how to deallocate a singleton ?
 void ImageViewer::setImage(const QImage &newImage) {
     image = newImage;
     if (image.colorSpace().isValid())
         image.convertToColorSpace(QColorSpace::SRgb);
     imageLabel->setPixmap(QPixmap::fromImage(image));
-    scaleFactor = 1.0;
+    //scaleFactor = 1.0; // remove so scaling is preserved from one image to the other
 
     scrollArea->setVisible(true);
-    fitToWindowAct->setEnabled(true);
+    //fitToWindowAct->setEnabled(true);
     updateActions();
 
     if (!fitToWindowAct->isChecked())
@@ -128,6 +130,20 @@ void ImageViewer::open() {
     while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
 }
 
+void ImageViewer::nextImage() {
+    GeoTaggedImageList::instance().NextImage();
+    loadCurrentImage();
+    //FIXME save image state ?
+    //FIXME then load the image
+}
+
+void ImageViewer::previousImage() {
+    GeoTaggedImageList::instance().PreviousImage();
+    loadCurrentImage();
+    //FIXME save image state ?
+    //FIXME load previous image
+}
+
 void ImageViewer::zoomIn() {
     scaleImage(1.25);
 }
@@ -139,6 +155,7 @@ void ImageViewer::zoomOut() {
 void ImageViewer::normalSize() {
     imageLabel->adjustSize();
     scaleFactor = 1.0;
+    emit scaleFactorChanged(scaleFactor);
 }
 
 void ImageViewer::fitToWindow() {
@@ -193,6 +210,14 @@ void ImageViewer::createActions() {
 
     viewMenu->addSeparator();
 
+    QAction *nextImageAct = viewMenu->addAction(tr("&Next Image..."), this, &ImageViewer::nextImage);
+    nextImageAct->setShortcut(QKeySequence::Forward);
+
+    QAction *previousImageAct = viewMenu->addAction(tr("&Previous Image..."), this, &ImageViewer::previousImage);
+    previousImageAct->setShortcut(QKeySequence::Back);
+
+    viewMenu->addSeparator();
+
     fitToWindowAct = viewMenu->addAction(tr("&Fit to Window"), this, &ImageViewer::fitToWindow);
     fitToWindowAct->setEnabled(false);
     fitToWindowAct->setCheckable(true);
@@ -227,5 +252,10 @@ void ImageViewer::scaleImage(double factor) {
 
 void ImageViewer::adjustScrollBar(QScrollBar *scrollBar, double factor) {
     scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep() / 2)));
+}
+
+void ImageViewer::loadCurrentImage() {
+    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_.base()->path_.string()));
+    scaleImage(1);
 }
 //endregion

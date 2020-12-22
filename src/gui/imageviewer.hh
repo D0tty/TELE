@@ -40,6 +40,10 @@ private slots:
 
     void open();
 
+    void nextImage();
+
+    void previousImage();
+
     void zoomIn();
 
     void zoomOut();
@@ -55,6 +59,8 @@ signals:
     void scaleFactorChanged(const double &);
 
 private:
+    void loadCurrentImage();
+
     void createActions();
 
     void updateActions();
@@ -70,7 +76,7 @@ private:
     //TODO add current image on list index ?
     QImage image;
     SubQLabel *imageLabel;
-    double scaleFactor = 1;
+    double scaleFactor = 1.0;
     QScrollArea *scrollArea;
     QAction *zoomInAct{};
     QAction *zoomOutAct{};
@@ -84,7 +90,7 @@ class SubQLabel : public QLabel {
 Q_OBJECT
 
 public:
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
 
 public slots:
 

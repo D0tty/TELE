@@ -9,13 +9,23 @@
 #include <boost/filesystem/path.hpp>
 #include <misc/singleton.hh>
 #include <vector>
+#include <iterator>
 
 class GeoTaggedImageList final : public Singleton<GeoTaggedImageList> {
 public:
-    GeoTaggedImageList() : geoTaggedImageList_() {}
+    GeoTaggedImageList() : geoTaggedImageList_(), it_() {}
 
     void PopulateImages(boost::filesystem::path path);
 
+    void NextImage();
+
+    void PreviousImage();
+
+    int GetListPosition() const;
+
+    int GetListLength() const;
+
+    std::vector<GeoTaggedImage>::iterator it_;
     std::vector<GeoTaggedImage> geoTaggedImageList_;
 };
 

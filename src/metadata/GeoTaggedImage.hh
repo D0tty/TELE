@@ -8,12 +8,16 @@
 #include "data/Coordinate.hh"
 #include "data/Image.hh"
 
+#include <utility>
+
 class GeoTaggedImage {
 public:
-    explicit GeoTaggedImage(const boost::filesystem::path &path) : image_(path), coordinate_() {}
+    explicit GeoTaggedImage(boost::filesystem::path path)
+            : path_(std::move(path)), coordinate_longlat_(), coordinate_xy_() {}
 
-    Coordinate coordinate_;
-    Image image_;
+    Coordinate<double> coordinate_longlat_; // cyclone center coordinate (long, lat)
+    Coordinate<int> coordinate_xy_;      // pixel image values
+    boost::filesystem::path path_;
 };
 
 
