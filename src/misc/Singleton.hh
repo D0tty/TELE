@@ -17,7 +17,7 @@ public:
     Singleton &operator=(const Singleton) = delete;
 
 protected:
-    Singleton() {}
+    Singleton() = default;
 };
 
 template<typename T>

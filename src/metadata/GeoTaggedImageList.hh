@@ -25,9 +25,11 @@ public:
 
     void PreviousImage();
 
-    [[nodiscard]] int GetListPosition() const;
+    [[nodiscard]] long GetListPosition() const;
 
-    [[nodiscard]] int GetListLength() const;
+    [[nodiscard]] long GetListLength() const;
+
+    [[nodiscard]] bool allPointsSet() const;
 
     std::vector<GeoTaggedImage>::iterator it_;
     std::vector<GeoTaggedImage> geoTaggedImageList_;

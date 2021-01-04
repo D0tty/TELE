@@ -15,7 +15,12 @@
 
 class Export {
 public:
-    static void exportCSV(const std::string &path);
+    enum {
+        Error = false,
+        Success = true
+    };
+
+    static bool exportCSV(const std::string &path);
 
 private:
     static std::vector<std::string> TaggedImageToStringVector(

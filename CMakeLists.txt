@@ -13,9 +13,7 @@ file(CREATE_LINK ../images ./images SYMBOLIC)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 find_package(Threads REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-pkg_search_module(SDL2 REQUIRED sdl2)
-pkg_search_module(SDL2IMAGE REQUIRED SDL2_image)
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
+include_directories(${Qt5Widgets_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 message(STATUS "Boost version: ${Boost_VERSION}")
 
@@ -26,13 +24,12 @@ add_executable(${PROJECT_NAME}
 
         src/misc/misc.cc
         src/misc/misc.hh
-        src/misc/Singleton.cc
         src/misc/Singleton.hh
 
-        src/data/Coordinate.cc
         src/data/Coordinate.hh
+        src/data/Export.cc
+        src/data/Export.hh
 
-        src/metadata/GeoTaggedImage.cc
         src/metadata/GeoTaggedImage.hh
         src/metadata/GeoTaggedImageList.cc
         src/metadata/GeoTaggedImageList.hh
@@ -41,10 +38,7 @@ add_executable(${PROJECT_NAME}
         src/gui/Imageviewer.hh
 
         src/maths/Convert.cc
-        src/maths/Convert.hh
-
-        src/data/Export.cc
-        src/data/Export.hh)
+        src/maths/Convert.hh)
 
 add_compile_options(
         -Wall
@@ -62,6 +56,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
         pthread
         ${Qt5Widgets_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${SDL2_LIBRARIES}
-        ${SDL2IMAGE_LIBRARIES})
+        ${Boost_LIBRARIES})

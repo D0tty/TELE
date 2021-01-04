@@ -4,10 +4,15 @@
 
 #include "Export.hh"
 
-void Export::exportCSV(const std::string &path) {
-    std::fstream fstream;
-    fstream.open(path, std::fstream::out);
-    auto writer = csv::make_csv_writer(fstream);
+bool Export::exportCSV(const std::string &path) {
+    std::fstream outStream;
+
+    outStream.open(path, std::fstream::out);
+    if (outStream.fail() || !outStream.good() || outStream.bad()) {
+        return false;
+    }
+
+    auto writer = csv::make_csv_writer(outStream);
     static const auto header = std::vector<std::string>(
             {"Image ID",
              "Line",
@@ -19,7 +24,6 @@ void Export::exportCSV(const std::string &path) {
 
     writer << header;
 
-    //FIXME Start loop at i = 1 and treat i = 0 outside the loop
     int i;
     for (i = 0; i < GeoTaggedImageList::instance().GetListLength() - 1; i++) {
         auto line = TaggedImageToStringVector(
@@ -41,6 +45,7 @@ void Export::exportCSV(const std::string &path) {
     line.emplace_back("N/A");
 
     writer << line;
+    return true;
 }
 
 std::vector<std::string> Export::TaggedImageToStringVector(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {

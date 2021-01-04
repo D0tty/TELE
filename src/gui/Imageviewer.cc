@@ -35,21 +35,25 @@ void showPoint(SubQLabel *label, int x, int y, const QColor &color = Qt::GlobalC
 void dialogExport() {
     QDialog dialog;
     QFormLayout form(&dialog);
-    form.addRow(new QLabel("Export data ?"));
+    form.addRow(new QLabel("All poinst are not set.\nDo you really want to export ?"));
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
     QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
     QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
 
-    // Show the dialog as modal
-    //FIXME show modal only if there is a point that is not set
-    if (dialog.exec() == QDialog::Accepted) {
+    if (GeoTaggedImageList::instance().allPointsSet() || dialog.exec() == QDialog::Accepted) {
         QString fileName = QFileDialog::getSaveFileName(
                 &dialog, QObject::tr("Export data as CSV"),
                 nullptr,
                 QObject::tr("CSV (*.csv);;All Files (*)"));
-        Export::exportCSV(fileName.toStdString()); //FIXME Modal on error ?
+        if (fileName.compare("") != 0) {
+            if (Export::exportCSV(fileName.toStdString()) == Export::Error) {
+                QMessageBox errorMessageBox;
+                errorMessageBox.setText("There was an error while exporting.\nCheck file permissions and try again.");
+                errorMessageBox.exec();
+            }
+        }
     }
 }
 //endregion
@@ -135,11 +139,6 @@ void ImageViewer::setImage(const QImage &newImage) {
     }
 
     scrollArea->setVisible(true);
-    //fitToWindowAct->setEnabled(true);
-    updateActions();
-
-    if (!fitToWindowAct->isChecked())
-        imageLabel->adjustSize();
 }
 
 void ImageViewer::open() {
@@ -177,29 +176,21 @@ void ImageViewer::normalSize() {
     emit scaleFactorChanged(scaleFactor);
 }
 
-void ImageViewer::fitToWindow() {
-    bool fitToWindow = fitToWindowAct->isChecked();
-    scrollArea->setWidgetResizable(fitToWindow);
-    if (!fitToWindow) {
-        normalSize();
-    }
-    updateActions();
+void ImageViewer::about() {
+    QMessageBox::about(this, tr("About Tele"),
+                       tr("<p>This program exists to assist you during the TELE's TDs.</p>"
+                          "<p>There is no help message other that this one given that the GUI"
+                          " is very easy to use.</p>"
+                          "<p>This program is opensource under the {LICENCE_NAME} licence.</p>")); //TODO chose license
 }
 
-void ImageViewer::about() {
-    QMessageBox::about(this, tr("About Image Viewer"),
-                       tr("<p>The <b>Image Viewer</b> example shows how to combine QLabel "
-                          "and QScrollArea to display an image. QLabel is typically used "
-                          "for displaying a text, but it can also display an image. "
-                          "QScrollArea provides a scrolling view around another widget. "
-                          "If the child widget exceeds the size of the frame, QScrollArea "
-                          "automatically provides scroll bars. </p><p>The example "
-                          "demonstrates how QLabel's ability to scale its contents "
-                          "(QLabel::scaledContents), and QScrollArea's ability to "
-                          "automatically resize its contents "
-                          "(QScrollArea::widgetResizable), can be used to implement "
-                          "zooming and scaling features. </p><p>In addition the example "
-                          "shows how to use QPainter to print an image.</p>"));
+void ImageViewer::authors() { // NOLINT(readability-convert-member-functions-to-static)
+    QMessageBox about;
+    about.setTextFormat(Qt::RichText);
+    about.setWindowTitle(tr("Authors"));
+    about.setText(
+            tr("Thomas `Dotty` Michelot ~<a href=\"mailto:thomas.michelot@epita.fr\">thomas.michelot@epita.fr</a>~"));
+    about.exec();
 }
 
 void ImageViewer::createActions() {
@@ -225,8 +216,8 @@ void ImageViewer::createActions() {
     zoomOutAct->setEnabled(false);
 
     normalSizeAct = viewMenu->addAction(tr("&Normal Size"), this, &ImageViewer::normalSize);
-    normalSizeAct->setShortcut(tr("Ctrl+S"));
-    normalSizeAct->setEnabled(false);
+    normalSizeAct->setShortcut(tr("Ctrl+N"));
+    normalSizeAct->setEnabled(true);
 
     viewMenu->addSeparator();
 
@@ -236,28 +227,16 @@ void ImageViewer::createActions() {
     QAction *previousImageAct = viewMenu->addAction(tr("&Previous Image..."), this, &ImageViewer::previousImage);
     previousImageAct->setShortcut(QKeySequence::Back);
 
-    viewMenu->addSeparator();
-
-    fitToWindowAct = viewMenu->addAction(tr("&Fit to Window"), this, &ImageViewer::fitToWindow);
-    fitToWindowAct->setEnabled(false);
-    fitToWindowAct->setCheckable(true);
-    fitToWindowAct->setShortcut(tr("Ctrl+F"));
-
     QMenu *exportMenu = menuBar()->addMenu(tr("&Export"));
-    exportMenu->addAction(tr("CSV file"), this, &dialogExport);
+    QAction *exportCSVAct = exportMenu->addAction(tr("&CSV file"), this, &dialogExport);
+    exportCSVAct->setShortcut(tr("Ctrl+S"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
     helpMenu->addAction(tr("&About"), this, &ImageViewer::about);
-    helpMenu->addAction(tr("About &Qt"), &QApplication::aboutQt);
+    helpMenu->addAction(tr("&Authors"), this, &ImageViewer::authors);
 
     connect(this, SIGNAL(scaleFactorChanged(const double&)), imageLabel, SLOT(setFactor(const double&)));
-}
-
-void ImageViewer::updateActions() {
-    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
 }
 
 void ImageViewer::scaleImage(double factor) {

@@ -30,14 +30,23 @@ void GeoTaggedImageList::PreviousImage() {
     }
 }
 
-int GeoTaggedImageList::GetListPosition() const {
+long GeoTaggedImageList::GetListPosition() const {
     return this->it_ - this->geoTaggedImageList_.begin();
 }
 
-int GeoTaggedImageList::GetListLength() const {
+long GeoTaggedImageList::GetListLength() const {
     return this->geoTaggedImageList_.size();
 }
 
 void GeoTaggedImageList::clear() {
     this->geoTaggedImageList_.clear();
+}
+
+bool GeoTaggedImageList::allPointsSet() const {
+    return std::all_of(
+            this->geoTaggedImageList_.begin(),
+            this->geoTaggedImageList_.end(),
+            [](const GeoTaggedImage &img) {
+                return img.coordinate_xy_.getX() != 0 && img.coordinate_xy_.getY() != 0;
+            });
 }

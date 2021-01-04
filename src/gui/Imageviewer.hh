@@ -50,9 +50,9 @@ private slots:
 
     void normalSize();
 
-    void fitToWindow();
-
     void about();
+
+    void authors();
 
 signals:
 
@@ -62,8 +62,6 @@ private:
     void loadCurrentImage();
 
     void createActions();
-
-    void updateActions();
 
     void setImage(const QImage &newImage);
 
@@ -78,7 +76,6 @@ private:
     QAction *zoomInAct{};
     QAction *zoomOutAct{};
     QAction *normalSizeAct{};
-    QAction *fitToWindowAct{};
 };
 //endregion
 
