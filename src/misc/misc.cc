@@ -9,7 +9,7 @@ std::vector<boost::filesystem::path> getDirectoryFiles(boost::filesystem::path &
 
     try {
         for (auto &entry: boost::filesystem::directory_iterator(path)) {
-            if (is_regular_file(entry.path())) {
+            if (boost::filesystem::is_regular_file(entry.path())) {
                 files.push_back(entry.path());
             }
         }
@@ -22,21 +22,4 @@ std::vector<boost::filesystem::path> getDirectoryFiles(boost::filesystem::path &
     std::sort(files.begin(), files.end());
 
     return files;
-}
-
-int isPath(std::string &strPath) {
-    auto p = boost::filesystem::path(strPath);
-    if (boost::filesystem::exists(p)) {
-        return boost::filesystem::is_directory(p);
-    }
-    return false;
-}
-
-int strEqual(char *s1, const std::string &s2) {
-    return s2 == s1;
-}
-
-void usage(char **argv) {
-    std::string name(argv[0]);
-    std::cout << "Usage: " << name << " -d <directory>" << std::endl;
 }

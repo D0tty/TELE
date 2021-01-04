@@ -6,18 +6,17 @@
 #define TELE_GEOTAGGEDIMAGE_HH
 
 #include "data/Coordinate.hh"
-#include "data/Image.hh"
-
+#include <boost/filesystem/path.hpp>
 #include <utility>
 
 class GeoTaggedImage {
 public:
-    explicit GeoTaggedImage(boost::filesystem::path path)
-            : path_(std::move(path)), coordinate_longlat_(), coordinate_xy_() {}
+    explicit GeoTaggedImage(boost::filesystem::path path, int index)
+            : path_(std::move(path)), coordinate_xy_(), index_(index) {}
 
-    Coordinate<double> coordinate_longlat_; // cyclone center coordinate (long, lat)
     Coordinate<int> coordinate_xy_;      // pixel image values
     boost::filesystem::path path_;
+    int index_;
 };
 
 

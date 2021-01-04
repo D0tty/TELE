@@ -7,7 +7,7 @@
 
 #include "GeoTaggedImage.hh"
 #include <boost/filesystem/path.hpp>
-#include <misc/singleton.hh>
+#include <misc/Singleton.hh>
 #include <vector>
 #include <iterator>
 
@@ -17,13 +17,17 @@ public:
 
     void PopulateImages(boost::filesystem::path path);
 
+    void clear();
+
+    [[nodiscard]] GeoTaggedImage *CurrentImage() const;
+
     void NextImage();
 
     void PreviousImage();
 
-    int GetListPosition() const;
+    [[nodiscard]] int GetListPosition() const;
 
-    int GetListLength() const;
+    [[nodiscard]] int GetListLength() const;
 
     std::vector<GeoTaggedImage>::iterator it_;
     std::vector<GeoTaggedImage> geoTaggedImageList_;

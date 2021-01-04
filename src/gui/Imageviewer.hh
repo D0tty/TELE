@@ -71,9 +71,6 @@ private:
 
     static void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
-    //TODO add GeoTaggedImageList here
-    GeoTaggedImageList geoTaggedImageList;
-    //TODO add current image on list index ?
     QImage image;
     SubQLabel *imageLabel;
     double scaleFactor = 1.0;
@@ -94,7 +91,7 @@ public:
 
 public slots:
 
-    void setFactor(const double &factor);
+    [[maybe_unused]] void setFactor(const double &factor);
 
 private:
     double scaleFactor = 1.0;

@@ -10,17 +10,77 @@ class Coordinate {
 public:
     Coordinate() : x_(0), y_(0) {}
 
-    Coordinate(T x, T y) {
-        x_ = x;
-        y_ = y;
+    /**
+     * @param x = Longitude
+     * @param y = Latitude
+     */
+    Coordinate(T x_long, T y_lat) {
+        x_ = x_long;
+        y_ = y_lat;
     }
 
+    /**
+     * @brief Returns X
+     * @return Returns X
+     */
     T getX() {
         return x_;
     }
 
+    /**
+     * @brief Returns Longitude
+     * @return Returns Longitude
+     */
+    T getLongitude() {
+        return x_;
+    }
+
+    /**
+     * @brief Returns Y
+     * @return Returns Y
+     */
     T getY() {
         return y_;
+    }
+
+    /**
+     * @brief Returns Latitude
+     * @return Returns Latitude
+     */
+    T getLatitude() {
+        return y_;
+    }
+
+    /**
+     * @brief Sets X
+     * @param x = Longitude
+     */
+    void setX(T x) {
+        this->x_ = x;
+    }
+
+    /**
+     * @brief Sets Longitude
+     * @param x = Longitude
+     */
+    void setLongitude(T longitude) {
+        this->x_ = longitude;
+    }
+
+    /**
+     * @brief Sets Y or Latitude
+     * @param y = Latitude
+     */
+    void setY(T y) {
+        this->y_ = y;
+    }
+
+    /**
+     * @brief Sets Latitude
+     * @param y = Latitude
+     */
+    void setLatitude(T latitude) {
+        this->y_ = latitude;
     }
 
     T x_;

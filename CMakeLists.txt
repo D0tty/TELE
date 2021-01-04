@@ -26,11 +26,9 @@ add_executable(${PROJECT_NAME}
 
         src/misc/misc.cc
         src/misc/misc.hh
-        src/misc/singleton.cc
-        src/misc/singleton.hh
+        src/misc/Singleton.cc
+        src/misc/Singleton.hh
 
-        src/data/Image.cc
-        src/data/Image.hh
         src/data/Coordinate.cc
         src/data/Coordinate.hh
 
@@ -39,8 +37,14 @@ add_executable(${PROJECT_NAME}
         src/metadata/GeoTaggedImageList.cc
         src/metadata/GeoTaggedImageList.hh
 
-        src/gui/imageviewer.cc
-        src/gui/imageviewer.hh)
+        src/gui/Imageviewer.cc
+        src/gui/Imageviewer.hh
+
+        src/maths/Convert.cc
+        src/maths/Convert.hh
+
+        src/data/Export.cc
+        src/data/Export.hh)
 
 add_compile_options(
         -Wall

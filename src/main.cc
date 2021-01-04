@@ -1,7 +1,7 @@
 #include "misc/misc.hh"
 #include "metadata/GeoTaggedImageList.hh"
 #include <QApplication>
-#include <gui/imageviewer.hh>
+#include <gui/Imageviewer.hh>
 #include <QtWidgets/QFileDialog>
 #include <QDebug>
 

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/range/iterator.hpp>
 
 /**
@@ -17,11 +18,5 @@
  * @return sorted vector of path to images
  */
 std::vector<boost::filesystem::path> getDirectoryFiles(boost::filesystem::path &path);
-
-int isPath(std::string &strPath);
-
-int strEqual(char *s1, const std::string &s2);
-
-void usage(char *argv[]);
 
 #endif //TELE_MISC_HH

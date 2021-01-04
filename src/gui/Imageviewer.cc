@@ -2,7 +2,7 @@
 // Created by dotty on 12/14/20.
 //
 
-#include "imageviewer.hh"
+#include "Imageviewer.hh"
 
 #include <QApplication>
 #include <QColorSpace>
@@ -12,19 +12,50 @@
 #include <QImageWriter>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QMimeData>
 #include <QPainter>
 #include <QScreen>
 #include <QScrollArea>
 #include <QScrollBar>
-#include <QStandardPaths>
 #include <QStatusBar>
 #include <QMouseEvent>
 #include <iostream>
 #include <cmath>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QLineEdit>
+#include "data/Export.hh"
+
+//region shared Functions
+void showPoint(SubQLabel *label, int x, int y, const QColor &color = Qt::GlobalColor::red) {
+    auto img = label->pixmap(Qt::ReturnByValue).toImage();
+    img.setPixelColor(x, y, color);
+    label->setPixmap(QPixmap::fromImage(img));
+}
+
+void dialogExport() {
+    QDialog dialog;
+    QFormLayout form(&dialog);
+    form.addRow(new QLabel("Export data ?"));
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    // Show the dialog as modal
+    //FIXME show modal only if there is a point that is not set
+    if (dialog.exec() == QDialog::Accepted) {
+        QString fileName = QFileDialog::getSaveFileName(
+                &dialog, QObject::tr("Export data as CSV"),
+                nullptr,
+                QObject::tr("CSV (*.csv);;All Files (*)"));
+        Export::exportCSV(fileName.toStdString()); //FIXME Modal on error ?
+    }
+}
+//endregion
 
 //region SubQLabel implementation
-void SubQLabel::setFactor(const double &factor) {
+[[maybe_unused]] void SubQLabel::setFactor(const double &factor) {
     scaleFactor = factor;
 }
 
@@ -36,13 +67,11 @@ void SubQLabel::mousePressEvent(QMouseEvent *event) {
     int y_image = (int) std::round(y / scaleFactor);
 
     if (event->button() == Qt::LeftButton) {
-        //FIXME here add logic to match (x,y) to the coord of the current image
-        std::cout << "base x: " << x << std::endl;
-        std::cout << "base y: " << y << std::endl;
-
-        std::cout << "Image pixel: (" << x_image << ", " << y_image << ")" << std::endl;
-        std::cout << "Image float pixel (" << event->x() / scaleFactor << ", " << event->y() / scaleFactor << ")"
-                  << std::endl;
+        auto &xy_coord = GeoTaggedImageList::instance().it_.base()->coordinate_xy_;
+        xy_coord.setX(x_image);
+        xy_coord.setY(y_image);
+        // Immediately show selected point on image
+        showPoint(this, x_image, y_image);
     }
 }
 //endregion
@@ -84,20 +113,26 @@ bool ImageViewer::loadFile(const QString &fileName) {
     const QString message = tr("Opened \"%1\", %2/%3")
             .arg(QDir::toNativeSeparators(
                     QString::fromStdString(boost::filesystem::path(fileName.toStdString()).stem().string())))
-            .arg(GeoTaggedImageList::instance().GetListPosition())
+            .arg(GeoTaggedImageList::instance().GetListPosition() + 1)
             .arg(GeoTaggedImageList::instance().GetListLength());
     statusBar()->showMessage(message);
+    imageLabel->setStatusTip(message);
     return true;
 }
 
-//FIXME no need to load an image but a directory and populate images
-//FIXME memory carefull, how to deallocate a singleton ?
 void ImageViewer::setImage(const QImage &newImage) {
     image = newImage;
     if (image.colorSpace().isValid())
         image.convertToColorSpace(QColorSpace::SRgb);
     imageLabel->setPixmap(QPixmap::fromImage(image));
-    //scaleFactor = 1.0; // remove so scaling is preserved from one image to the other
+    scaleFactor = 1.0;
+    scaleImage(scaleFactor);
+
+    // if the point is present show it
+    auto *const img = GeoTaggedImageList::instance().CurrentImage();
+    if (img->coordinate_xy_.getX() != 0 && img->coordinate_xy_.getY() != 0) {
+        showPoint(imageLabel, img->coordinate_xy_.getX(), img->coordinate_xy_.getY());
+    }
 
     scrollArea->setVisible(true);
     //fitToWindowAct->setEnabled(true);
@@ -107,41 +142,25 @@ void ImageViewer::setImage(const QImage &newImage) {
         imageLabel->adjustSize();
 }
 
-static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode) {
-    static bool firstDialog = true;
-
-    QStringList mimeTypeFilters;
-    const QByteArrayList supportedMimeTypes = acceptMode == QFileDialog::AcceptOpen
-                                              ? QImageReader::supportedMimeTypes()
-                                              : QImageWriter::supportedMimeTypes();
-    for (const QByteArray &mimeTypeName : supportedMimeTypes)
-        mimeTypeFilters.append(mimeTypeName);
-    mimeTypeFilters.sort();
-    dialog.setMimeTypeFilters(mimeTypeFilters);
-    dialog.selectMimeTypeFilter("image/jpeg");
-    if (acceptMode == QFileDialog::AcceptSave)
-        dialog.setDefaultSuffix("jpg");
-}
-
 void ImageViewer::open() {
-    QFileDialog dialog(this, tr("Open File"), QDir::currentPath());
-    initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
-
-    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    if (dialog.exec() == QDialog::Accepted) {
+        GeoTaggedImageList::instance().clear();
+        GeoTaggedImageList::instance().PopulateImages(dialog.directory().absolutePath().toStdString());
+        loadCurrentImage();
+    }
 }
 
 void ImageViewer::nextImage() {
     GeoTaggedImageList::instance().NextImage();
     loadCurrentImage();
-    //FIXME save image state ?
-    //FIXME then load the image
 }
 
 void ImageViewer::previousImage() {
     GeoTaggedImageList::instance().PreviousImage();
     loadCurrentImage();
-    //FIXME save image state ?
-    //FIXME load previous image
 }
 
 void ImageViewer::zoomIn() {
@@ -184,6 +203,7 @@ void ImageViewer::about() {
 }
 
 void ImageViewer::createActions() {
+
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
     QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &ImageViewer::open);
@@ -223,6 +243,9 @@ void ImageViewer::createActions() {
     fitToWindowAct->setCheckable(true);
     fitToWindowAct->setShortcut(tr("Ctrl+F"));
 
+    QMenu *exportMenu = menuBar()->addMenu(tr("&Export"));
+    exportMenu->addAction(tr("CSV file"), this, &dialogExport);
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
     helpMenu->addAction(tr("&About"), this, &ImageViewer::about);
@@ -256,6 +279,5 @@ void ImageViewer::adjustScrollBar(QScrollBar *scrollBar, double factor) {
 
 void ImageViewer::loadCurrentImage() {
     loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_.base()->path_.string()));
-    scaleImage(1);
 }
 //endregion
