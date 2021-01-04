@@ -46,7 +46,7 @@ void Export::exportCSV(const std::string &path) {
 std::vector<std::string> Export::TaggedImageToStringVector(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {
     std::vector<std::string> line;
 
-    line.push_back(std::to_string(image0.index_)); // Image ID
+    line.push_back(std::to_string(image0.index_ + 1)); // Image ID
     line.push_back(std::to_string(image0.coordinate_xy_.y_)); // Line
     line.push_back(std::to_string(image0.coordinate_xy_.x_)); // Column
     line.push_back(std::to_string(Convert::getLatitude(image0)));
