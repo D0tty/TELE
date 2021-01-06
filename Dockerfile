@@ -11,7 +11,6 @@ RUN pacman -S --noconfirm --needed \
 COPY ./CMakeLists.txt .
 COPY include ./include
 COPY src ./src
-RUN ls
 RUN mkdir build && cd build && cmake .. && make -j
 
 FROM archlinux

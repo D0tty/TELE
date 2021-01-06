@@ -1,0 +1,12 @@
+FROM archlinux AS builder
+WORKDIR /app
+RUN echo 'Server = http://archlinux.polymorf.fr/$repo/os/$arch' > /etc/pacman.d/mirrorlist
+RUN pacman -Suy --noconfirm
+RUN pacman -S --noconfirm --needed \
+              cmake \
+              base-devel \
+              boost \
+              boost-libs \
+              qt5-base
+#RUN mkdir build && cd build && cmake .. && make -j
+CMD ["bash"]
