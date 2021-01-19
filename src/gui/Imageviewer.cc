@@ -1,5 +1,5 @@
 //
-// Created by dotty on 12/14/20.
+// Created by Thomas Michelot on 12/14/20.
 //
 
 #include "Imageviewer.hh"
@@ -181,7 +181,7 @@ void ImageViewer::about() {
                        tr("<p>This program exists to assist you during the TELE's TDs.</p>"
                           "<p>There is no help message other that this one given that the GUI"
                           " is very easy to use.</p>"
-                          "<p>This program is opensource under the {LICENCE_NAME} licence.</p>")); //TODO chose license
+                          "<p>This program is opensource under the GNU GPL license.</p>"));
 }
 
 void ImageViewer::authors() { // NOLINT(readability-convert-member-functions-to-static)

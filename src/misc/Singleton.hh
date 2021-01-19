@@ -1,5 +1,5 @@
 //
-// Created by dotty on 12/6/20.
+// Created by Thomas Michelot on 12/6/20.
 //
 
 #ifndef TELE_SINGLETON_HH

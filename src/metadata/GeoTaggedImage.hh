@@ -1,5 +1,5 @@
 //
-// Created by dotty on 12/9/20.
+// Created by Thomas Michelot on 12/9/20.
 //
 
 #ifndef TELE_GEOTAGGEDIMAGE_HH

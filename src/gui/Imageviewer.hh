@@ -1,5 +1,5 @@
 //
-// Created by dotty on 12/14/20.
+// Created by Thomas Michelot on 12/14/20.
 //
 
 #ifndef TELE_IMAGEVIEWER_HH

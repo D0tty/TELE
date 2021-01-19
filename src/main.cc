@@ -1,3 +1,7 @@
+//
+// Created by Thomas Michelot on 12/6/20.
+//
+
 #include "misc/misc.hh"
 #include "metadata/GeoTaggedImageList.hh"
 #include <QApplication>
