@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(tele LANGUAGES CXX)
 enable_language(CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)

@@ -27,6 +27,28 @@ class SubQLabel;
 QT_END_NAMESPACE
 //endregion
 
+//region Shared Functions
+
+static constexpr float defaultWidth = 5.0;
+static const QColor defaultLineColor = Qt::GlobalColor::red;
+static const QColor defaultPointColor = Qt::GlobalColor::darkBlue;
+
+void showPoint(SubQLabel *label, int x, int y, const QColor &color = defaultPointColor, qreal width = defaultWidth);
+
+void showPoint(SubQLabel *label, const Coordinate<int> &coordinate, const QColor &color = defaultPointColor,
+               qreal width = defaultWidth);
+
+void drawLine(SubQLabel *label, int srcX, int srcY, int dstX, int dstY, const QColor &color = defaultLineColor,
+              qreal width = defaultWidth);
+
+void drawLine(SubQLabel *label, const Coordinate<int> &srcCoordinate, const Coordinate<int> &dstCoordinate,
+              const QColor &color = defaultLineColor, qreal width = defaultWidth);
+
+void dialogExportCsv();
+
+void dialogExportImage(const QPixmap &pixmap);
+//endregion Shared Functions
+
 //region ImageViewer class
 class ImageViewer : public QMainWindow {
 Q_OBJECT
@@ -36,13 +58,15 @@ public:
 
     bool loadFile(const QString &);
 
-private slots:
-
-    void open();
+public slots:
 
     void nextImage();
 
     void previousImage();
+
+private slots:
+
+    void open();
 
     void zoomIn();
 
@@ -84,6 +108,8 @@ class SubQLabel : public QLabel {
 Q_OBJECT
 
 public:
+    explicit SubQLabel(ImageViewer &imageViewer);
+
     void mousePressEvent(QMouseEvent *event) override;
 
 public slots:
@@ -92,6 +118,7 @@ public slots:
 
 private:
     double scaleFactor = 1.0;
+    ImageViewer &imageViewer_;
 
 };
 //endregion

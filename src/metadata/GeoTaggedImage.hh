@@ -12,9 +12,9 @@
 class GeoTaggedImage {
 public:
     explicit GeoTaggedImage(boost::filesystem::path path, int index)
-            : path_(std::move(path)), coordinate_xy_(), index_(index) {}
+            : path_(std::move(path)), coordinateXY_(), index_(index) {}
 
-    Coordinate<int> coordinate_xy_;      // pixel image values
+    Coordinate<int> coordinateXY_;      // pixel image values
     boost::filesystem::path path_;
     int index_;
 };

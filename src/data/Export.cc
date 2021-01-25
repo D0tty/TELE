@@ -9,7 +9,7 @@ bool Export::exportCSV(const std::string &path) {
 
     outStream.open(path, std::fstream::out);
     if (outStream.fail() || !outStream.good() || outStream.bad()) {
-        return false;
+        return Error;
     }
 
     auto writer = csv::make_csv_writer(outStream);
@@ -25,8 +25,8 @@ bool Export::exportCSV(const std::string &path) {
     writer << header;
 
     int i;
-    for (i = 0; i < GeoTaggedImageList::instance().GetListLength() - 1; i++) {
-        auto line = TaggedImageToStringVector(
+    for (i = 0; i < GeoTaggedImageList::instance().getListLength() - 1; i++) {
+        auto line = taggedImageToStringVector(
                 GeoTaggedImageList::instance().geoTaggedImageList_[i],
                 GeoTaggedImageList::instance().geoTaggedImageList_[i + 1]
         );
@@ -37,27 +37,31 @@ bool Export::exportCSV(const std::string &path) {
     std::vector<std::string> line;
 
     line.push_back(std::to_string(lastImage.index_ + 1)); // Image ID
-    line.push_back(std::to_string(lastImage.coordinate_xy_.getY())); // Line
-    line.push_back(std::to_string(lastImage.coordinate_xy_.getX())); // Column
+    line.push_back(std::to_string(lastImage.coordinateXY_.getY())); // Line
+    line.push_back(std::to_string(lastImage.coordinateXY_.getX())); // Column
     line.push_back(std::to_string(Convert::getLatitude(lastImage)));
     line.push_back(std::to_string(Convert::getLongitude(lastImage)));
     line.emplace_back("N/A");
     line.emplace_back("N/A");
 
     writer << line;
-    return true;
+    return Success;
 }
 
-std::vector<std::string> Export::TaggedImageToStringVector(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {
+std::vector<std::string> Export::taggedImageToStringVector(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {
     std::vector<std::string> line;
 
     line.push_back(std::to_string(image0.index_ + 1)); // Image ID
-    line.push_back(std::to_string(image0.coordinate_xy_.y_)); // Line
-    line.push_back(std::to_string(image0.coordinate_xy_.x_)); // Column
+    line.push_back(std::to_string(image0.coordinateXY_.getY())); // Line
+    line.push_back(std::to_string(image0.coordinateXY_.getX())); // Column
     line.push_back(std::to_string(Convert::getLatitude(image0)));
     line.push_back(std::to_string(Convert::getLongitude(image0)));
     line.push_back(std::to_string(Convert::getSpeed(image0, image1)));
     line.push_back(std::to_string(Convert::getOrientation(image0, image1)));
 
     return line;
+}
+
+bool Export::exportImage(const QString& path, const QPixmap &pixmap) {
+    return pixmap.save(path, "PNG", 100);
 }

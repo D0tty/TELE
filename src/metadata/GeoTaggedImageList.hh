@@ -15,19 +15,19 @@ class GeoTaggedImageList final : public Singleton<GeoTaggedImageList> {
 public:
     GeoTaggedImageList() : geoTaggedImageList_(), it_() {}
 
-    void PopulateImages(boost::filesystem::path path);
+    void populateImages(boost::filesystem::path path);
 
     void clear();
 
-    [[nodiscard]] GeoTaggedImage *CurrentImage() const;
+    [[nodiscard]] std::vector<GeoTaggedImage>::iterator currentImage() const;
 
-    void NextImage();
+    void nextImage();
 
-    void PreviousImage();
+    void previousImage();
 
-    [[nodiscard]] long GetListPosition() const;
+    [[nodiscard]] long getListPosition() const;
 
-    [[nodiscard]] long GetListLength() const;
+    [[nodiscard]] long getListLength() const;
 
     [[nodiscard]] bool allPointsSet() const;
 

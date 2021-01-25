@@ -13,23 +13,23 @@ double Convert::intermediateYFromPixelY(int y) {
 }
 
 double Convert::latitudeFromIntermediate(double x, double y) {
-    double rad_x = degreeToRadian(x);
-    double rad_y = degreeToRadian(y);
-    double sa = getSA(rad_x, rad_y);
+    double radX = degreeToRadian(x);
+    double radY = degreeToRadian(y);
+    double sa = getSA(radX, radY);
 
     if (sa < 0)
         return COORD_ERROR;
 
-    double sn = getSN(sqrt(sa), rad_x, rad_y);
-    double lat = SQUARED_ELLIPSOID_FLATNESS * (getS3(sn, rad_y) / getSXY(sn, rad_x, rad_y));
+    double sn = getSN(sqrt(sa), radX, radY);
+    double lat = SQUARED_ELLIPSOID_FLATNESS * (getS3(sn, radY) / getSXY(sn, radX, radY));
 
     return radianToDegree(atan(lat));
 }
 
 double Convert::longitudeFromIntermediate(double x, double y) {
-    double rad_x = degreeToRadian(x);
-    double rad_y = degreeToRadian(y);
-    double sa = getSA(rad_x, rad_y);
+    double radX = degreeToRadian(x);
+    double radY = degreeToRadian(y);
+    double sa = getSA(radX, radY);
 
     if (sa < 0)
         return COORD_ERROR;
@@ -101,7 +101,7 @@ double Convert::getOrientation(double diffLongitude, double diffLatitude) {
 }
 
 double Convert::getSpeed(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {
-    auto longitude0 = getLatitude(image0);
+    auto longitude0 = getLongitude(image0);
     auto latitude0 = getLatitude(image0);
     auto longitude1 = getLongitude(image1);
     auto latitude1 = getLatitude(image1);
@@ -110,7 +110,7 @@ double Convert::getSpeed(const GeoTaggedImage &image0, const GeoTaggedImage &ima
 }
 
 double Convert::getOrientation(const GeoTaggedImage &image0, const GeoTaggedImage &image1) {
-    auto longitude0 = getLatitude(image0);
+    auto longitude0 = getLongitude(image0);
     auto latitude0 = getLatitude(image0);
     auto longitude1 = getLongitude(image1);
     auto latitude1 = getLatitude(image1);
@@ -119,16 +119,16 @@ double Convert::getOrientation(const GeoTaggedImage &image0, const GeoTaggedImag
 }
 
 double Convert::getLongitude(const GeoTaggedImage &image) {
-    auto interX = Convert::intermediateXFromPixelX(image.coordinate_xy_.x_);
-    auto interY = Convert::intermediateYFromPixelY(image.coordinate_xy_.y_);
+    auto interX = Convert::intermediateXFromPixelX(image.coordinateXY_.getX());
+    auto interY = Convert::intermediateYFromPixelY(image.coordinateXY_.getY());
     auto longitude = Convert::longitudeFromIntermediate(interX, interY);
 
     return longitude;
 }
 
 double Convert::getLatitude(const GeoTaggedImage &image) {
-    auto interX = Convert::intermediateXFromPixelX(image.coordinate_xy_.x_);
-    auto interY = Convert::intermediateYFromPixelY(image.coordinate_xy_.y_);
+    auto interX = Convert::intermediateXFromPixelX(image.coordinateXY_.getX());
+    auto interY = Convert::intermediateYFromPixelY(image.coordinateXY_.getY());
     auto latitude = Convert::latitudeFromIntermediate(interX, interY);
 
     return latitude;

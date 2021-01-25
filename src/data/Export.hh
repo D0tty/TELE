@@ -12,6 +12,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <QtGui/QImage>
+#include <QtGui/QPixmap>
 
 class Export {
 public:
@@ -22,8 +24,10 @@ public:
 
     static bool exportCSV(const std::string &path);
 
+    static bool exportImage(const QString& path, const QPixmap &pixmap);
+
 private:
-    static std::vector<std::string> TaggedImageToStringVector(
+    static std::vector<std::string> taggedImageToStringVector(
             const GeoTaggedImage &image0,
             const GeoTaggedImage &image1);
 };

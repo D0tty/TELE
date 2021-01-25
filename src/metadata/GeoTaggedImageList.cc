@@ -5,7 +5,7 @@
 #include <misc/misc.hh>
 #include "GeoTaggedImageList.hh"
 
-void GeoTaggedImageList::PopulateImages(boost::filesystem::path path) {
+void GeoTaggedImageList::populateImages(boost::filesystem::path path) {
     std::vector<boost::filesystem::path> files = getDirectoryFiles(path);
     int index = 0;
     for (boost::filesystem::path &p : files) {
@@ -14,27 +14,27 @@ void GeoTaggedImageList::PopulateImages(boost::filesystem::path path) {
     this->it_ = this->geoTaggedImageList_.begin();
 }
 
-GeoTaggedImage *GeoTaggedImageList::CurrentImage() const {
-    return this->it_.base();
+std::vector<GeoTaggedImage>::iterator GeoTaggedImageList::currentImage() const {
+    return this->it_;
 }
 
-void GeoTaggedImageList::NextImage() {
+void GeoTaggedImageList::nextImage() {
     if (this->it_ != --this->geoTaggedImageList_.end()) {
         this->it_++;
     }
 }
 
-void GeoTaggedImageList::PreviousImage() {
+void GeoTaggedImageList::previousImage() {
     if (this->it_ != this->geoTaggedImageList_.begin()) {
         this->it_--;
     }
 }
 
-long GeoTaggedImageList::GetListPosition() const {
+long GeoTaggedImageList::getListPosition() const {
     return this->it_ - this->geoTaggedImageList_.begin();
 }
 
-long GeoTaggedImageList::GetListLength() const {
+long GeoTaggedImageList::getListLength() const {
     return this->geoTaggedImageList_.size();
 }
 
@@ -47,6 +47,6 @@ bool GeoTaggedImageList::allPointsSet() const {
             this->geoTaggedImageList_.begin(),
             this->geoTaggedImageList_.end(),
             [](const GeoTaggedImage &img) {
-                return img.coordinate_xy_.getX() != 0 && img.coordinate_xy_.getY() != 0;
+                return img.coordinateXY_.getX() != 0 && img.coordinateXY_.getY() != 0;
             });
 }

@@ -18,7 +18,6 @@
 #include <QScrollBar>
 #include <QStatusBar>
 #include <QMouseEvent>
-#include <iostream>
 #include <cmath>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFormLayout>
@@ -26,16 +25,39 @@
 #include "data/Export.hh"
 
 //region shared Functions
-void showPoint(SubQLabel *label, int x, int y, const QColor &color = Qt::GlobalColor::red) {
+void showPoint(SubQLabel *label, int x, int y, const QColor &color, qreal width) {
     auto img = label->pixmap(Qt::ReturnByValue).toImage();
-    img.setPixelColor(x, y, color);
+    QPainter painter(&img);
+    QPen pen(color);
+    pen.setWidthF(width);
+    painter.setPen(pen);
+    painter.drawPoint(x, y);
     label->setPixmap(QPixmap::fromImage(img));
 }
 
-void dialogExport() {
+void showPoint(SubQLabel *label, const Coordinate<int> &coordinate, const QColor &color, qreal width) {
+    showPoint(label, coordinate.getX(), coordinate.getY(), color, width);
+}
+
+void drawLine(SubQLabel *label, int srcX, int srcY, int dstX, int dstY, const QColor &color, qreal width) {
+    auto img = label->pixmap(Qt::ReturnByValue).toImage();
+    QPainter painter(&img);
+    QPen red(color, width);
+    painter.setPen(red);
+    painter.drawLine(srcX, srcY, dstX, dstY);
+    label->setPixmap(QPixmap::fromImage(img));
+}
+
+void drawLine(SubQLabel *label, const Coordinate<int> &srcCoordinate, const Coordinate<int> &dstCoordinate,
+              const QColor &color, const qreal width) {
+    drawLine(label, srcCoordinate.getX(), srcCoordinate.getY(), dstCoordinate.getX(), dstCoordinate.getY(),
+             color, width);
+}
+
+void dialogExportCsv() {
     QDialog dialog;
     QFormLayout form(&dialog);
-    form.addRow(new QLabel("All poinst are not set.\nDo you really want to export ?"));
+    form.addRow(new QLabel("All points are not set.\nDo you really want to export ?"));
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
@@ -56,6 +78,20 @@ void dialogExport() {
         }
     }
 }
+
+void dialogExportImage(const QPixmap &pixmap) {
+    QString fileName = QFileDialog::getSaveFileName(
+            nullptr, QObject::tr("Export current image as PNG"),
+            nullptr,
+            QObject::tr("PNG (*.png);;All Files (*)"));
+    if (fileName.compare("") != 0) {
+        if (Export::exportImage(fileName, pixmap) == Export::Error) {
+            QMessageBox errorMessageBox;
+            errorMessageBox.setText("There was an error while exporting.\nCheck file permissions and try again.");
+            errorMessageBox.exec();
+        }
+    }
+}
 //endregion
 
 //region SubQLabel implementation
@@ -64,25 +100,42 @@ void dialogExport() {
 }
 
 void SubQLabel::mousePressEvent(QMouseEvent *event) {
+    auto &instance = GeoTaggedImageList::instance();
     int x = event->x();
     int y = event->y();
 
-    int x_image = (int) std::round(x / scaleFactor);
-    int y_image = (int) std::round(y / scaleFactor);
+    int xImage = (int) std::round(x / scaleFactor);
+    int yImage = (int) std::round(y / scaleFactor);
 
     if (event->button() == Qt::LeftButton) {
-        auto &xy_coord = GeoTaggedImageList::instance().it_.base()->coordinate_xy_;
-        xy_coord.setX(x_image);
-        xy_coord.setY(y_image);
-        // Immediately show selected point on image
-        showPoint(this, x_image, y_image);
+        auto &xyCoord = instance.it_->coordinateXY_;
+        xyCoord.setX(xImage);
+        xyCoord.setY(yImage);
+        // Immediately show trajectory on image
+        if (instance.it_ != instance.geoTaggedImageList_.begin() &&
+            std::prev(instance.it_)->coordinateXY_.isSet()) {
+            drawLine(this, std::prev(instance.it_)->coordinateXY_, xyCoord);
+            // draw previous point above line for clarity
+            showPoint(this, std::prev(instance.it_)->coordinateXY_);
+        }
+        showPoint(this, xyCoord);
+    }
+    if (event->button() == Qt::RightButton) {
+        if (event->modifiers() == Qt::ShiftModifier) {
+            this->imageViewer_.previousImage();
+        } else {
+            this->imageViewer_.nextImage();
+        }
     }
 }
+
+SubQLabel::SubQLabel(ImageViewer &imageViewer) : QLabel(), imageViewer_(imageViewer) {}
+
 //endregion
 
 //region ImageViewer implementation
 ImageViewer::ImageViewer(QWidget *parent)
-        : QMainWindow(parent), imageLabel(new SubQLabel), scrollArea(new QScrollArea) {
+        : QMainWindow(parent), imageLabel(new SubQLabel(*this)), scrollArea(new QScrollArea) {
     imageLabel->setBackgroundRole(QPalette::Base);
     imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     imageLabel->setScaledContents(true);
@@ -96,7 +149,7 @@ ImageViewer::ImageViewer(QWidget *parent)
 
     auto s = QGuiApplication::primaryScreen()->availableVirtualSize() * 2 / 5; //magic number to fix x11 display bug
     resize(s);
-    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_.base()->path_.string()));
+    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_->path_.string()));
 }
 
 bool ImageViewer::loadFile(const QString &fileName) {
@@ -117,8 +170,8 @@ bool ImageViewer::loadFile(const QString &fileName) {
     const QString message = tr("Opened \"%1\", %2/%3")
             .arg(QDir::toNativeSeparators(
                     QString::fromStdString(boost::filesystem::path(fileName.toStdString()).stem().string())))
-            .arg(GeoTaggedImageList::instance().GetListPosition() + 1)
-            .arg(GeoTaggedImageList::instance().GetListLength());
+            .arg(GeoTaggedImageList::instance().getListPosition() + 1)
+            .arg(GeoTaggedImageList::instance().getListLength());
     statusBar()->showMessage(message);
     imageLabel->setStatusTip(message);
     return true;
@@ -133,9 +186,16 @@ void ImageViewer::setImage(const QImage &newImage) {
     scaleImage(scaleFactor);
 
     // if the point is present show it
-    auto *const img = GeoTaggedImageList::instance().CurrentImage();
-    if (img->coordinate_xy_.getX() != 0 && img->coordinate_xy_.getY() != 0) {
-        showPoint(imageLabel, img->coordinate_xy_.getX(), img->coordinate_xy_.getY());
+    auto begin = GeoTaggedImageList::instance().geoTaggedImageList_.begin();
+    auto end = GeoTaggedImageList::instance().currentImage();
+
+    for (auto &it = begin; it != end; it++) {
+        const auto &next = std::next(it);
+        if (next != end && next->coordinateXY_.isSet()) {
+            drawLine(imageLabel, it->coordinateXY_, next->coordinateXY_);
+        }
+
+        showPoint(imageLabel, it->coordinateXY_);
     }
 
     scrollArea->setVisible(true);
@@ -147,18 +207,18 @@ void ImageViewer::open() {
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
     if (dialog.exec() == QDialog::Accepted) {
         GeoTaggedImageList::instance().clear();
-        GeoTaggedImageList::instance().PopulateImages(dialog.directory().absolutePath().toStdString());
+        GeoTaggedImageList::instance().populateImages(dialog.directory().absolutePath().toStdString());
         loadCurrentImage();
     }
 }
 
 void ImageViewer::nextImage() {
-    GeoTaggedImageList::instance().NextImage();
+    GeoTaggedImageList::instance().nextImage();
     loadCurrentImage();
 }
 
 void ImageViewer::previousImage() {
-    GeoTaggedImageList::instance().PreviousImage();
+    GeoTaggedImageList::instance().previousImage();
     loadCurrentImage();
 }
 
@@ -178,10 +238,9 @@ void ImageViewer::normalSize() {
 
 void ImageViewer::about() {
     QMessageBox::about(this, tr("About Tele"),
-                       tr("<p>This program exists to assist you during the TELE's TDs.</p>"
-                          "<p>There is no help message other that this one given that the GUI"
-                          " is very easy to use.</p>"
-                          "<p>This program is opensource under the GNU GPL license.</p>"));
+                       tr("<p>This program is here to assist you during the TELE's TDs.</p>"
+                          "<p>Please refer to the readme for any assistance.</p>"
+                          "<p>This program is opensource and is under the GNU GPL license.</p>"));
 }
 
 void ImageViewer::authors() { // NOLINT(readability-convert-member-functions-to-static)
@@ -194,7 +253,6 @@ void ImageViewer::authors() { // NOLINT(readability-convert-member-functions-to-
 }
 
 void ImageViewer::createActions() {
-
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
     QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &ImageViewer::open);
@@ -228,8 +286,9 @@ void ImageViewer::createActions() {
     previousImageAct->setShortcut(QKeySequence::Back);
 
     QMenu *exportMenu = menuBar()->addMenu(tr("&Export"));
-    QAction *exportCSVAct = exportMenu->addAction(tr("&CSV file"), this, &dialogExport);
-    exportCSVAct->setShortcut(tr("Ctrl+S"));
+    exportMenu->addAction(tr("&CSV file"), this, &dialogExportCsv);
+    exportMenu->addAction(tr("&Image file"), this,
+                          [this] { dialogExportImage(this->imageLabel->pixmap(Qt::ReturnByValue)); });
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
@@ -257,6 +316,6 @@ void ImageViewer::adjustScrollBar(QScrollBar *scrollBar, double factor) {
 }
 
 void ImageViewer::loadCurrentImage() {
-    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_.base()->path_.string()));
+    loadFile(QString::fromStdString(GeoTaggedImageList::instance().it_->path_.string()));
 }
 //endregion

@@ -10,6 +10,9 @@ class Coordinate {
 public:
     Coordinate() : x_(0), y_(0) {}
 
+    /*
+    Coordinate(T x, T y) : x_(x), y_(y) {}
+    */
 
     /**
      * @param x = Longitude
@@ -93,6 +96,14 @@ public:
         this->y_ = latitude;
     }
     */
+
+    /**
+     * @brief return true if the coordinates are set (0,0 is not considered set)
+     * @return true if coordinates are set
+     */
+    [[nodiscard]] bool isSet() const {
+        return this->x_ != 0 && this->y_ != 0;
+    }
 
     T x_;
     T y_;

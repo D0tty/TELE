@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
 
     auto &geoTaggedImageList = GeoTaggedImageList::instance();
-    geoTaggedImageList.PopulateImages(dialog.directory().absolutePath().toStdString());
+    geoTaggedImageList.populateImages(dialog.directory().absolutePath().toStdString());
 
     ImageViewer imageViewer;
     imageViewer.show();
